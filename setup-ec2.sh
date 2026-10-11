@@ -11,7 +11,21 @@ echo "================================================================="
 # 1. Update OS and install Java 21, Maven, Node.js, Git, Nginx
 echo "[1/6] Installing Java 21, Maven, Node.js, and Nginx..."
 sudo dnf update -y
-sudo dnf install -y java-21-amazon-corretto-devel maven git nodejs nginx
+sudo dnf install -y java-21-amazon-corretto-devel java-21-amazon-corretto maven git nodejs nginx
+
+# Ensure Java 21 is active compiler for Maven
+JAVA21_HOME=$(find /usr/lib/jvm -maxdepth 1 -name "*21*corretto*" | head -n 1)
+if [ -z "$JAVA21_HOME" ]; then
+    JAVA21_HOME=$(find /usr/lib/jvm -name "*21*" | head -n 1)
+fi
+if [ -n "$JAVA21_HOME" ]; then
+    export JAVA_HOME="$JAVA21_HOME"
+    export PATH="$JAVA_HOME/bin:$PATH"
+    sudo alternatives --set java "$JAVA_HOME/bin/java" 2>/dev/null || true
+    sudo alternatives --set javac "$JAVA_HOME/bin/javac" 2>/dev/null || true
+fi
+echo "Active Java version: $(java -version 2>&1 | head -n 1)"
+echo "Active Javac version: $(javac -version 2>&1 | head -n 1)"
 
 # 2. Build React Frontend
 echo "[2/6] Building React Vite Frontend..."

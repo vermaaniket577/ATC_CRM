@@ -82,6 +82,9 @@ cd ..
 
 JAR_FILE=$(find backend/target -name "*.jar" ! -name "*sources.jar" ! -name "*javadoc.jar" | head -n 1)
 
+# Allow Nginx to connect to network upstream in SELinux
+sudo setsebool -P httpd_can_network_connect 1 2>/dev/null || true
+
 # 5. Create Systemd Service for Spring Boot (Auto-restarts on reboot)
 echo "[6/6] Creating Systemd background service for Java backend..."
 sudo tee /etc/systemd/system/telecom-crm.service > /dev/null << EOF
@@ -94,8 +97,7 @@ Type=simple
 User=ec2-user
 WorkingDirectory=$(pwd)/backend
 Environment=SPRING_PROFILES_ACTIVE=dev
-Environment=PORT=8080
-ExecStart=/usr/bin/java -Xms256m -Xmx512m -XX:+UseG1GC -jar $(pwd)/${JAR_FILE}
+ExecStart=/usr/bin/java -Xms256m -Xmx512m -XX:+UseG1GC -jar $(pwd)/${JAR_FILE} --server.port=8081
 Restart=always
 RestartSec=10
 

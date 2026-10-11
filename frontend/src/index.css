@@ -1,0 +1,58 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-slate-50 text-slate-900 font-sans antialiased min-h-screen;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+}
+
+/* Crisp Clean Light Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f8fafc;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Light Glassmorphism Panel */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+}
+
+/* Light Theme Color Palettes: Red, White, Orange, Blue, Green */
+.brand-gradient {
+  background: linear-gradient(135deg, #EF4444 0%, #F97316 45%, #2563EB 100%);
+}
+
+.gradient-red-orange {
+  background: linear-gradient(135deg, #EF4444 0%, #F97316 100%);
+}
+
+.gradient-blue-green {
+  background: linear-gradient(135deg, #2563EB 0%, #10B981 100%);
+}
+
+.gradient-orange-amber {
+  background: linear-gradient(135deg, #F97316 0%, #FBBF24 100%);
+}
+
+.card-hover {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
+}

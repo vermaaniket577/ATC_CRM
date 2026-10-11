@@ -1,0 +1,32 @@
+# Stage 1: Build the Spring Boot Application
+FROM maven:3.9.6-eclipse-temurin-21-alpine AS builder
+WORKDIR /workspace
+
+# Cache dependencies
+COPY backend/pom.xml .
+RUN mvn dependency:go-offline -B
+
+# Copy source code and build production jar
+COPY backend/src ./src
+RUN mvn clean package -DskipTests -B
+
+# Stage 2: Runtime Container
+FROM eclipse-temurin:21-jre-alpine
+LABEL maintainer="Apex Telecom Systems <devops@apextelecom.in>"
+
+WORKDIR /app
+
+# Create a non-privileged system user for enterprise security
+RUN addgroup -S telecom && adduser -S telecom -G telecom
+USER telecom:telecom
+
+# Copy executable jar from builder stage
+COPY --from=builder --chown=telecom:telecom /workspace/target/*.jar app.jar
+
+# JVM Performance & Container Memory Flags
+ENV JAVA_OPTS="-Xms512m -Xmx1024m -XX:+UseG1GC -XX:+ExitOnOutOfMemoryError"
+ENV SPRING_PROFILES_ACTIVE="mysql"
+
+EXPOSE 8080
+
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]

@@ -1,0 +1,87 @@
+# ==============================================================================
+# APEX TELECOM CRM - AWS PRODUCTION RUNTIME PROFILE (application-aws.yml)
+# ==============================================================================
+spring:
+  config:
+    activate:
+      on-profile: aws
+
+  datasource:
+    # Amazon RDS for MySQL endpoint with SSL enforcement and Asia/Kolkata timezone
+    url: jdbc:mysql://${RDS_ENDPOINT:localhost}:3306/${DB_NAME:telecom_crm}?useSSL=true&requireSSL=true&verifyServerCertificate=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Kolkata&characterEncoding=UTF-8
+    username: ${DB_USER:telecom_app}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 35
+      minimum-idle: 10
+      idle-timeout: 300000
+      max-lifetime: 1200000
+      connection-timeout: 30000
+      leak-detection-threshold: 20000
+      pool-name: TelecomCrmAwsHikariPool
+
+  jpa:
+    database-platform: org.hibernate.dialect.MySQLDialect
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 25
+          order_inserts: true
+          order_updates: true
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+
+# Embedded Tomcat & ALB Forwarded Headers Strategy
+server:
+  port: ${PORT:8080}
+  forward-headers-strategy: native
+  tomcat:
+    threads:
+      max: 200
+      min-spare: 20
+    connection-timeout: 20000
+    max-connections: 8192
+    accept-count: 100
+
+# Security and JWT Token Settings (Secrets passed via AWS Parameter Store / Environment)
+app:
+  jwt:
+    secret: ${JWT_SECRET}
+    expiration-ms: ${JWT_EXPIRATION_MS:86400000}
+    refresh-expiration-ms: ${JWT_REFRESH_EXPIRATION_MS:604800000}
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:https://crm.apextelecom.in,https://www.apextelecom.in}
+
+# Actuator & CloudWatch Health Monitoring
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when_authorized
+      probes:
+        enabled: true
+  metrics:
+    tags:
+      application: apex-telecom-crm
+      environment: production
+
+# Structured Logging for CloudWatch Ingestion
+logging:
+  level:
+    root: INFO
+    com.telecom.crm: INFO
+    org.springframework.security: WARN
+    org.hibernate.SQL: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - [IP:%X{clientIp:-N/A}] [User:%X{username:-N/A}] %msg%n"
